@@ -38,17 +38,17 @@ export default function DashboardLayout({ children, isAdmin = false }) {
       {/* Sidebar */}
       <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
-          <div className="sidebar-logo" onClick={() => navigate('/')}>
-            <div className="logo-icon">
-              <span>🛍️</span>
-            </div>
+          <div className="sidebar-logo" onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src="/logo.png" alt="TitipIn Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
             {sidebarOpen && <span className="logo-text">TitipIn</span>}
           </div>
           <button
             className="sidebar-toggle desktop-only"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            {sidebarOpen ? '◀' : '▶'}
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              {sidebarOpen ? 'chevron_left' : 'chevron_right'}
+            </span>
           </button>
         </div>
 
@@ -63,7 +63,7 @@ export default function DashboardLayout({ children, isAdmin = false }) {
               }
               onClick={() => setMobileOpen(false)}
             >
-              <span className="sidebar-link-icon">{item.icon}</span>
+              <span className="sidebar-link-icon material-symbols-outlined">{item.icon}</span>
               {sidebarOpen && <span className="sidebar-link-label">{item.label}</span>}
             </NavLink>
           ))}
@@ -71,7 +71,7 @@ export default function DashboardLayout({ children, isAdmin = false }) {
 
         <div className="sidebar-footer">
           <button className="sidebar-link logout-btn" onClick={handleLogout}>
-            <span className="sidebar-link-icon">🚪</span>
+            <span className="sidebar-link-icon material-symbols-outlined">logout</span>
             {sidebarOpen && <span className="sidebar-link-label">Keluar</span>}
           </button>
         </div>
@@ -85,7 +85,7 @@ export default function DashboardLayout({ children, isAdmin = false }) {
             className="mobile-menu-btn"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
-            ☰
+            <span className="material-symbols-outlined">menu</span>
           </button>
 
           <div className="navbar-spacer" />
@@ -96,7 +96,7 @@ export default function DashboardLayout({ children, isAdmin = false }) {
               className="navbar-icon-btn"
               onClick={() => { setShowNotif(!showNotif); setShowUserMenu(false); }}
             >
-              🔔
+              <span className="material-symbols-outlined">notifications</span>
               {unreadCount > 0 && (
                 <span className="notif-badge">{unreadCount}</span>
               )}
@@ -121,7 +121,13 @@ export default function DashboardLayout({ children, isAdmin = false }) {
                         onClick={() => handleNotifClick(n)}
                       >
                         <div className="dropdown-item-icon">
-                          {n.type === 'warning' ? '⚠️' : n.type === 'error' ? '❌' : 'ℹ️'}
+                          {n.type === 'warning' ? (
+                            <span className="material-symbols-outlined" style={{ color: 'var(--warning)', fontSize: '18px' }}>warning</span>
+                          ) : n.type === 'error' ? (
+                            <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: '18px' }}>error</span>
+                          ) : (
+                            <span className="material-symbols-outlined" style={{ color: 'var(--info)', fontSize: '18px' }}>info</span>
+                          )}
                         </div>
                         <div className="dropdown-item-body">
                           <div className="dropdown-item-title">{n.title}</div>
@@ -163,14 +169,14 @@ export default function DashboardLayout({ children, isAdmin = false }) {
                 </div>
                 <div className="dropdown-divider" />
                 <button className="dropdown-action" onClick={() => { navigate('/profile'); setShowUserMenu(false); }}>
-                  👤 Profil Saya
+                  <span className="material-symbols-outlined" style={{ marginRight: '8px', fontSize: '18px' }}>person</span> Profil Saya
                 </button>
                 <button className="dropdown-action" onClick={() => { navigate('/orders'); setShowUserMenu(false); }}>
-                  📋 Pesanan Saya
+                  <span className="material-symbols-outlined" style={{ marginRight: '8px', fontSize: '18px' }}>package_2</span> Pesanan Saya
                 </button>
                 <div className="dropdown-divider" />
                 <button className="dropdown-action danger" onClick={handleLogout}>
-                  🚪 Keluar
+                  <span className="material-symbols-outlined" style={{ marginRight: '8px', fontSize: '18px', color: 'var(--error)' }}>logout</span> Keluar
                 </button>
               </div>
             )}
@@ -185,3 +191,4 @@ export default function DashboardLayout({ children, isAdmin = false }) {
     </div>
   );
 }
+

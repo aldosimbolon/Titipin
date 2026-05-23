@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import Store from '../../data/store';
 import { COUNTRIES, ORDER_STATUSES } from '../../data/constants';
 import { formatCurrency, formatDate, getCountry, truncate } from '../../utils/helpers';
+import { animate } from 'animejs';
 import './Customer.css';
 
 export default function Dashboard() {
@@ -16,6 +17,26 @@ export default function Dashboard() {
       setOrders(Store.getOrdersByUserId(user.id));
     }
   }, [user]);
+
+  // Entrance animations for metrics and action panels
+  useEffect(() => {
+    if (orders.length >= 0) {
+      animate('.stat-card', {
+        opacity: [0, 1],
+        y: [20, 0],
+        delay: (el, i) => i * 85,
+        duration: 500,
+        easing: 'easeOutQuad'
+      });
+      animate('.quick-action-card', {
+        opacity: [0, 1],
+        scale: [0.95, 1],
+        delay: (el, i) => i * 100,
+        duration: 450,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [orders]);
 
   const stats = useMemo(() => {
     const total = orders.length;
@@ -48,31 +69,31 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      icon: '📦',
+      icon: 'package_2',
       label: 'Total Pesanan',
       value: stats.total,
-      bg: 'rgba(102, 126, 234, 0.15)',
+      bg: 'rgba(0, 105, 84, 0.12)',
       sub: 'Semua pesanan'
     },
     {
-      icon: '🔄',
+      icon: 'sync',
       label: 'Pesanan Aktif',
       value: stats.active,
-      bg: 'rgba(255, 170, 0, 0.15)',
+      bg: 'rgba(249, 115, 22, 0.12)',
       sub: 'Sedang diproses'
     },
     {
-      icon: '✅',
+      icon: 'check_circle',
       label: 'Pesanan Selesai',
       value: stats.completed,
-      bg: 'rgba(0, 214, 143, 0.15)',
+      bg: 'rgba(34, 197, 94, 0.12)',
       sub: 'Berhasil diterima'
     },
     {
-      icon: '💰',
+      icon: 'payments',
       label: 'Total Belanja',
       value: formatCurrency(stats.totalSpent),
-      bg: 'rgba(246, 194, 62, 0.15)',
+      bg: 'rgba(234, 179, 8, 0.12)',
       sub: 'Pesanan selesai'
     },
   ];
@@ -82,7 +103,7 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="page-header">
         <h1>Dashboard</h1>
-        <p>Selamat datang, {user?.name}! 👋</p>
+        <p>Selamat datang kembali, {user?.name}! 👋</p>
       </div>
 
       {/* Stats Grid */}
@@ -90,10 +111,10 @@ export default function Dashboard() {
         {statCards.map((card, i) => (
           <div
             key={card.label}
-            className={`stat-card glass-card animate-fade-in-up delay-${i + 1}`}
+            className="stat-card glass-card"
           >
-            <div className="stat-card-icon" style={{ background: card.bg }}>
-              {card.icon}
+            <div className="stat-card-icon" style={{ background: card.bg, color: 'var(--primary-start)' }}>
+              <span className="material-symbols-outlined">{card.icon}</span>
             </div>
             <div className="stat-card-body">
               <div className="stat-card-label">{card.label}</div>
@@ -106,16 +127,19 @@ export default function Dashboard() {
 
       {/* Recent Orders */}
       <div className="content-card animate-fade-in-up delay-5">
-        <div className="content-card-header">
-          <h3>📋 Pesanan Terbaru</h3>
+        <div className="content-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>history</span>
+            Pesanan Terbaru
+          </h3>
           <Link to="/orders" className="btn btn-sm btn-outline">
-            Lihat Semua →
+            Lihat Semua
           </Link>
         </div>
         <div className="content-card-body">
           {recentOrders.length === 0 ? (
             <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
-              <span className="empty-state-icon">📭</span>
+              <span className="empty-state-icon material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--text-tertiary)' }}>inbox</span>
               <h3>Belum ada pesanan</h3>
               <p>Mulai belanja dari luar negeri sekarang!</p>
               <Link to="/order/create" className="btn btn-primary">
@@ -171,14 +195,18 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="quick-actions">
-        <Link to="/order/create" className="quick-action-card glass-card animate-fade-in-up delay-1">
-          <div className="quick-action-icon">🛍️</div>
+        <Link to="/order/create" className="quick-action-card glass-card">
+          <div className="quick-action-icon" style={{ background: 'var(--primary-gradient)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'white' }}>add_shopping_cart</span>
+          </div>
           <div className="quick-action-title">Buat Pesanan Baru</div>
           <div className="quick-action-desc">Pesan barang dari luar negeri</div>
         </Link>
 
-        <Link to="/orders" className="quick-action-card glass-card animate-fade-in-up delay-2">
-          <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #00d4ff, #0095ff)' }}>📍</div>
+        <Link to="/orders" className="quick-action-card glass-card">
+          <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #0284c7, #0369a1)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'white' }}>distance</span>
+          </div>
           <div className="quick-action-title">Lacak Pesanan</div>
           <div className="quick-action-desc">Pantau status pengiriman</div>
         </Link>
@@ -187,9 +215,11 @@ export default function Dashboard() {
           href="https://wa.me/6281234567890?text=Halo%20TitipIn,%20saya%20butuh%20bantuan"
           target="_blank"
           rel="noopener noreferrer"
-          className="quick-action-card glass-card animate-fade-in-up delay-3"
+          className="quick-action-card glass-card"
         >
-          <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #00d68f, #00b377)' }}>💬</div>
+          <div className="quick-action-icon" style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '24px', color: 'white' }}>support_agent</span>
+          </div>
           <div className="quick-action-title">Hubungi CS</div>
           <div className="quick-action-desc">Chat langsung via WhatsApp</div>
         </a>

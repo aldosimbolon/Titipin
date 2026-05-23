@@ -1,16 +1,57 @@
-# React + Vite
+# 📦 Titipin - Fullstack Monorepo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Proyek ini telah direstrukturisasi menjadi struktur fullstack modern yang terpisah menjadi **Frontend** dan **Backend**.
 
-Currently, two official plugins are available:
+## 📂 Struktur Folder Baru
+```text
+Titipin/
+├── package.json          # Konfigurasi Monorepo (Orkestrator)
+├── README.md             # Petunjuk Penggunaan Utama
+├── .gitignore            # Gitignore tingkat root
+├── frontend/             # 💻 React + Vite Frontend App
+│   ├── src/              # Source code frontend
+│   ├── public/           # Aset publik frontend
+│   ├── package.json      # Dependensi frontend
+│   └── ...
+└── backend/              # ⚙️ Express.js Backend API
+    ├── server.js         # Entry point utama server Express
+    ├── package.json      # Dependensi backend
+    ├── .env              # Konfigurasi Environment Variables (PORT, dll)
+    └── src/              # Arsitektur backend terorganisir
+        ├── config/       # Konfigurasi database/services
+        ├── controllers/  # Logika bisnis per endpoint
+        ├── middleware/   # Middleware Express (auth, logging)
+        ├── models/       # Skema database
+        └── routes/       # Rute endpoint API
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🚀 Petunjuk Penggunaan Cepat
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Anda dapat mengontrol seluruh proyek (frontend dan backend) dari **root folder `Titipin`** tanpa harus membuka beberapa terminal.
 
-## Expanding the ESLint configuration
+### 1. Instalasi Dependensi Pertama Kali
+Jalankan perintah ini di root folder untuk menginstal library pembantu monorepo dan semua dependensi frontend & backend sekaligus:
+```bash
+npm install
+npm run install:all
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 2. Menjalankan Server Development (Frontend + Backend)
+Nyalakan kedua aplikasi sekaligus dengan satu perintah tunggal:
+```bash
+npm run dev
+```
+Setelah dijalankan:
+*   **💻 Frontend** akan aktif di: `http://localhost:5173` (atau port default Vite Anda)
+*   **⚙️ Backend API** akan aktif di: `http://localhost:5000`
+*   **🩺 Tes Kesehatan API**: `http://localhost:5000/api/health`
+
+---
+
+## 🛠️ Perintah Berguna Lainnya (dari Root)
+
+*   **Hanya Jalankan Frontend**: `npm run dev:frontend`
+*   **Hanya Jalankan Backend**: `npm run dev:backend`
+*   **Build Frontend**: `npm run build`

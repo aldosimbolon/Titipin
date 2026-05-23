@@ -11,6 +11,7 @@ import OrderCreate from './pages/customer/OrderCreate';
 import OrderHistory from './pages/customer/OrderHistory';
 import OrderDetail from './pages/customer/OrderDetail';
 import Profile from './pages/customer/Profile';
+import Warehouse from './pages/customer/Warehouse';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -67,6 +68,7 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />
             <Route path="/order/create" element={<ProtectedRoute><DashboardLayout><OrderCreate /></DashboardLayout></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><DashboardLayout><OrderHistory /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/warehouse" element={<ProtectedRoute><DashboardLayout><Warehouse /></DashboardLayout></ProtectedRoute>} />
             <Route path="/order/:id" element={<ProtectedRoute><DashboardLayout><OrderDetail /></DashboardLayout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><DashboardLayout><Profile /></DashboardLayout></ProtectedRoute>} />
 

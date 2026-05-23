@@ -66,8 +66,8 @@ export default function OrderHistory() {
             <h1>Riwayat Pesanan</h1>
             <p>{orders.length} total pesanan</p>
           </div>
-          <button className="btn btn-primary" onClick={() => navigate('/order/create')}>
-            ➕ Buat Pesanan Baru
+          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => navigate('/order/create')}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span> Buat Pesanan Baru
           </button>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default function OrderHistory() {
         <input
           type="text"
           className="form-input"
-          placeholder="🔍 Cari pesanan (ID atau nama produk)..."
+          placeholder="Cari pesanan (ID atau nama produk)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ maxWidth: 400 }}
@@ -100,7 +100,7 @@ export default function OrderHistory() {
       {/* Order List */}
       {filtered.length === 0 ? (
         <div className="empty-state-card glass-card">
-          <span className="empty-state-icon">📭</span>
+          <span className="empty-state-icon material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--text-tertiary)' }}>inbox</span>
           <h3>Tidak ada pesanan</h3>
           <p>{search ? 'Tidak ditemukan pesanan yang cocok' : 'Belum ada pesanan pada kategori ini'}</p>
           {!search && activeTab === 'all' && (

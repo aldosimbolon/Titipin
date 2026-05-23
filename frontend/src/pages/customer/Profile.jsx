@@ -105,7 +105,12 @@ export default function Profile() {
         <div className="profile-main">
           {/* Edit Profile */}
           <div className="content-card" style={{ marginBottom: 'var(--space-6)' }}>
-            <div className="content-card-header"><h3>✏️ Informasi Profil</h3></div>
+            <div className="content-card-header">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>person</span>
+                Informasi Profil
+              </h3>
+            </div>
             <div className="content-card-body">
               <div className="form-group">
                 <label className="form-label">Nama Lengkap</label>
@@ -132,10 +137,13 @@ export default function Profile() {
 
           {/* Addresses */}
           <div className="content-card" style={{ marginBottom: 'var(--space-6)' }}>
-            <div className="content-card-header">
-              <h3>📍 Alamat Tersimpan</h3>
-              <button className="btn btn-sm btn-outline" onClick={() => { resetAddrForm(); setShowAddrForm(true); }}>
-                ➕ Tambah
+            <div className="content-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>location_on</span>
+                Alamat Tersimpan
+              </h3>
+              <button className="btn btn-sm btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => { resetAddrForm(); setShowAddrForm(true); }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span> Tambah
               </button>
             </div>
             <div className="content-card-body">
@@ -153,8 +161,12 @@ export default function Profile() {
                       {!addr.isDefault && (
                         <button className="btn btn-sm btn-ghost" onClick={() => handleSetDefault(addr.id)}>Set Utama</button>
                       )}
-                      <button className="btn btn-sm btn-ghost" onClick={() => handleAddrEdit(addr)}>✏️</button>
-                      <button className="btn btn-sm btn-ghost" onClick={() => handleAddrDelete(addr.id)} style={{ color: 'var(--error)' }}>🗑️</button>
+                      <button className="btn btn-sm btn-ghost" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }} onClick={() => handleAddrEdit(addr)}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+                      </button>
+                      <button className="btn btn-sm btn-ghost" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }} onClick={() => handleAddrDelete(addr.id)}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--error)' }}>delete</span>
+                      </button>
                     </div>
                   </div>
                   <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
@@ -189,8 +201,11 @@ export default function Profile() {
 
           {/* Password */}
           <div className="content-card">
-            <div className="content-card-header">
-              <h3>🔒 Ubah Password</h3>
+            <div className="content-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>lock</span>
+                Ubah Password
+              </h3>
               <button className="btn btn-sm btn-ghost" onClick={() => setShowPw(!showPw)}>
                 {showPw ? 'Tutup' : 'Ubah'}
               </button>

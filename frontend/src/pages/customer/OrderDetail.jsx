@@ -70,14 +70,14 @@ export default function OrderDetail() {
       <div className="page-header">
         <div className="page-header-actions">
           <div>
-            <button className="btn btn-ghost" onClick={() => navigate('/orders')} style={{ marginBottom: 'var(--space-2)', padding: '4px 0' }}>
-              ← Kembali
+            <button className="btn btn-ghost" onClick={() => navigate('/orders')} style={{ marginBottom: 'var(--space-2)', padding: '4px 0', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span> Kembali
             </button>
             <h1>Pesanan {order.id}</h1>
             <p>{country?.flag} {country?.name} · {formatDate(order.createdAt)}</p>
           </div>
           <span className={`badge ${ORDER_STATUSES.find(s => s.id === order.status)?.badgeClass}`} style={{ fontSize: 'var(--text-sm)', padding: 'var(--space-2) var(--space-4)' }}>
-            {ORDER_STATUSES.find(s => s.id === order.status)?.icon} {ORDER_STATUSES.find(s => s.id === order.status)?.label}
+            {ORDER_STATUSES.find(s => s.id === order.status)?.label}
           </span>
         </div>
       </div>
@@ -88,12 +88,15 @@ export default function OrderDetail() {
           {/* Timeline Tracker */}
           <div className="content-card" style={{ marginBottom: 'var(--space-6)' }}>
             <div className="content-card-header">
-              <h3>📍 Tracking Pesanan</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>distance</span>
+                Tracking Pesanan
+              </h3>
             </div>
             <div className="content-card-body">
               {isCancelled ? (
-                <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--error)' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: 'var(--space-2)' }}>❌</div>
+                <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--error)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--error)' }}>cancel</span>
                   <strong>Pesanan Dibatalkan</strong>
                 </div>
               ) : (
@@ -108,7 +111,17 @@ export default function OrderDetail() {
                       <div key={status.id} className={`timeline-step ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''} ${isFuture ? 'future' : ''}`}>
                         <div className="timeline-dot-wrapper">
                           <div className="timeline-dot">
-                            {isCompleted ? '✓' : status.icon}
+                            {isCompleted ? '✓' : (
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+                                {status.id === 'pending_quote' ? 'edit_note' :
+                                 status.id === 'awaiting_payment' ? 'payments' :
+                                 status.id === 'purchased' ? 'shopping_cart' :
+                                 status.id === 'at_warehouse' ? 'package_2' :
+                                 status.id === 'customs' ? 'receipt_long' :
+                                 status.id === 'shipped' ? 'local_shipping' :
+                                 status.id === 'completed' ? 'check_circle' : 'info'}
+                              </span>
+                            )}
                           </div>
                           {idx < trackStatuses.length - 1 && <div className="timeline-line" />}
                         </div>
@@ -132,7 +145,10 @@ export default function OrderDetail() {
           {/* Items */}
           <div className="content-card" style={{ marginBottom: 'var(--space-6)' }}>
             <div className="content-card-header">
-              <h3>🛒 Detail Barang ({order.items.length} item)</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>shopping_basket</span>
+                Detail Barang ({order.items.length} item)
+              </h3>
             </div>
             <div className="content-card-body">
               {order.items.map((item, idx) => (
@@ -141,11 +157,11 @@ export default function OrderDetail() {
                     <div className="detail-item-name">{item.name}</div>
                     {item.variant && <div className="detail-item-variant">Varian: {item.variant}</div>}
                     {item.url && (
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="detail-item-link">
-                        🔗 Lihat Produk
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="detail-item-link" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>open_in_new</span> Lihat Produk
                       </a>
                     )}
-                    {item.notes && <div className="detail-item-notes">📝 {item.notes}</div>}
+                    {item.notes && <div className="detail-item-notes" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span className="material-symbols-outlined" style={{ fontSize: '14px' }}>description</span> {item.notes}</div>}
                   </div>
                   <div className="detail-item-meta">
                     <div>{item.quantity}x {country?.currencySymbol}{item.priceOriginal?.toLocaleString()}</div>
@@ -159,7 +175,10 @@ export default function OrderDetail() {
           {/* Notes / Chat */}
           <div className="content-card">
             <div className="content-card-header">
-              <h3>💬 Catatan & Pesan</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>forum</span>
+                Catatan & Pesan
+              </h3>
             </div>
             <div className="content-card-body">
               {(!order.notes || order.notes.length === 0) && (
@@ -197,7 +216,10 @@ export default function OrderDetail() {
           {cost && (
             <div className="content-card" style={{ marginBottom: 'var(--space-6)' }}>
               <div className="content-card-header">
-                <h3>💰 Rincian Biaya</h3>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>payments</span>
+                  Rincian Biaya
+                </h3>
               </div>
               <div className="content-card-body">
                 <div className="cost-row"><span>Harga Barang</span><span>{formatCurrency(cost.itemTotal)}</span></div>
@@ -216,8 +238,9 @@ export default function OrderDetail() {
                   <span>{formatCurrency(cost.total)}</span>
                 </div>
                 {!order.finalCost && (
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-3)' }}>
-                    ⚠️ Ini adalah estimasi. Biaya ongkir final akan dikonfirmasi setelah barang ditimbang di gudang.
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px', color: 'var(--warning)' }}>warning</span>
+                    Ini adalah estimasi. Biaya ongkir final akan dikonfirmasi setelah barang ditimbang di gudang.
                   </p>
                 )}
               </div>
@@ -227,14 +250,17 @@ export default function OrderDetail() {
           {/* Payment Status */}
           <div className="content-card" style={{ marginBottom: 'var(--space-6)' }}>
             <div className="content-card-header">
-              <h3>💳 Status Pembayaran</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>credit_card</span>
+                Status Pembayaran
+              </h3>
             </div>
             <div className="content-card-body">
               <div className="payment-stage">
                 <div className="payment-stage-header">
                   <span>Tahap 1 (Produk + Pajak)</span>
                   <span className={`badge ${order.paymentStage1?.status === 'paid' ? 'badge-completed' : 'badge-pending'}`}>
-                    {order.paymentStage1?.status === 'paid' ? '✅ Lunas' : '⏳ Belum'}
+                    {order.paymentStage1?.status === 'paid' ? 'Lunas' : 'Belum'}
                   </span>
                 </div>
                 {order.paymentStage1?.amount > 0 && (
@@ -249,7 +275,7 @@ export default function OrderDetail() {
                 <div className="payment-stage-header">
                   <span>Tahap 2 (Ongkir Domestik)</span>
                   <span className={`badge ${order.paymentStage2?.status === 'paid' ? 'badge-completed' : 'badge-pending'}`}>
-                    {order.paymentStage2?.status === 'paid' ? '✅ Lunas' : '⏳ Belum'}
+                    {order.paymentStage2?.status === 'paid' ? 'Lunas' : 'Belum'}
                   </span>
                 </div>
                 {order.paymentStage2?.amount > 0 && (
@@ -266,7 +292,10 @@ export default function OrderDetail() {
           {order.shippingAddress && (
             <div className="content-card">
               <div className="content-card-header">
-                <h3>📍 Alamat Pengiriman</h3>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>location_on</span>
+                  Alamat Pengiriman
+                </h3>
               </div>
               <div className="content-card-body">
                 <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.7 }}>

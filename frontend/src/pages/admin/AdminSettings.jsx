@@ -67,7 +67,12 @@ export default function AdminSettings() {
       <div className="settings-grid">
         {/* Store Info */}
         <div className="content-card">
-          <div className="content-card-header"><h3>🏪 Informasi Toko</h3></div>
+          <div className="content-card-header">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>storefront</span>
+              Informasi Toko
+            </h3>
+          </div>
           <div className="content-card-body">
             <div className="form-group">
               <label className="form-label">Nama Toko</label>
@@ -91,7 +96,12 @@ export default function AdminSettings() {
 
         {/* Service Rates */}
         <div className="content-card">
-          <div className="content-card-header"><h3>💰 Tarif Layanan</h3></div>
+          <div className="content-card-header">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>payments</span>
+              Tarif Layanan
+            </h3>
+          </div>
           <div className="content-card-body">
             {[
               ['Biaya Jasa (%)', 'serviceFeePercent'],
@@ -121,7 +131,12 @@ export default function AdminSettings() {
 
         {/* Exchange Rates */}
         <div className="content-card">
-          <div className="content-card-header"><h3>💱 Kurs Mata Uang</h3></div>
+          <div className="content-card-header">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>currency_exchange</span>
+              Kurs Mata Uang
+            </h3>
+          </div>
           <div className="content-card-body">
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-4)' }}>
               Nilai konversi 1 unit mata uang asing ke Rupiah (IDR)
@@ -165,7 +180,12 @@ export default function AdminSettings() {
 
         {/* Shipping Rates */}
         <div className="content-card">
-          <div className="content-card-header"><h3>🚚 Tarif Ongkir per Kg</h3></div>
+          <div className="content-card-header">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>local_shipping</span>
+              Tarif Ongkir per Kg
+            </h3>
+          </div>
           <div className="content-card-body">
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-4)' }}>
               Estimasi biaya pengiriman internasional per kilogram
