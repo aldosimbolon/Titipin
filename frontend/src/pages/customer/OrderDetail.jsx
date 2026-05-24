@@ -16,6 +16,21 @@ export default function OrderDetail() {
   const [newNote, setNewNote] = useState('');
   const [notFound, setNotFound] = useState(false);
 
+  // States untuk Simulasi Pembayaran
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentStage, setPaymentStage] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [selectedMethod, setSelectedMethod] = useState('bca');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  const PAYMENT_METHODS = [
+    { id: 'bca', name: 'BCA Virtual Account', icon: '🏦' },
+    { id: 'mandiri', name: 'Mandiri Virtual Account', icon: '🏦' },
+    { id: 'gopay', name: 'GoPay', icon: '📱' },
+    { id: 'ovo', name: 'OVO', icon: '📱' },
+    { id: 'dana', name: 'DANA', icon: '📱' },
+  ];
+
   useEffect(() => {
     const o = Store.getOrderById(id);
     if (!o) { setNotFound(true); return; }
@@ -29,6 +44,78 @@ export default function OrderDetail() {
     const statuses = ORDER_STATUSES.filter(s => s.id !== 'cancelled');
     return statuses.findIndex(s => s.id === order.status);
   }, [order]);
+
+  const handleOpenPaymentModal = (stage, amount) => {
+    setPaymentStage(stage);
+    setPaymentAmount(amount);
+    setSelectedMethod('bca');
+    setShowPaymentModal(true);
+  };
+
+  const handleProcessPayment = () => {
+    setIsProcessingPayment(true);
+    setTimeout(() => {
+      const now = new Date().toISOString();
+      const updatedFields = {};
+
+      if (paymentStage === 1) {
+        updatedFields.paymentStage1 = {
+          amount: paymentAmount,
+          status: 'paid',
+          paidAt: now,
+          method: selectedMethod
+        };
+        updatedFields.status = 'purchased';
+        updatedFields.statusHistory = [
+          ...(order.statusHistory || []),
+          {
+            status: 'purchased',
+            date: now,
+            note: `Pembayaran Tahap 1 sebesar ${formatCurrency(paymentAmount)} berhasil diverifikasi via ${selectedMethod.toUpperCase()}.`
+          }
+        ];
+      } else {
+        updatedFields.paymentStage2 = {
+          amount: paymentAmount,
+          status: 'paid',
+          paidAt: now,
+          method: selectedMethod
+        };
+        updatedFields.statusHistory = [
+          ...(order.statusHistory || []),
+          {
+            status: order.status,
+            date: now,
+            note: `Pembayaran Tahap 2 (Ongkos Kirim Domestik) sebesar ${formatCurrency(paymentAmount)} berhasil diverifikasi via ${selectedMethod.toUpperCase()}.`
+          }
+        ];
+      }
+
+      Store.updateOrder(order.id, updatedFields);
+      setOrder(prev => ({
+        ...prev,
+        ...updatedFields
+      }));
+
+      Store.addNotification({
+        id: generateId(),
+        userId: user.id,
+        type: 'info',
+        title: `Pembayaran Tahap ${paymentStage} Berhasil`,
+        message: `Pembayaran sebesar ${formatCurrency(paymentAmount)} untuk pesanan ${order.id} berhasil terverifikasi.`,
+        read: false,
+        createdAt: now
+      });
+
+      toast.success(
+        'Pembayaran Sukses!',
+        `Pembayaran Tahap ${paymentStage} berhasil diverifikasi secara instan.`
+      );
+
+      setIsProcessingPayment(false);
+      setShowPaymentModal(false);
+    }, 1200);
+  };
 
   const handleAddNote = () => {
     if (!newNote.trim()) return;
@@ -269,6 +356,16 @@ export default function OrderDetail() {
                 {order.paymentStage1?.paidAt && (
                   <div className="payment-stage-date">Dibayar: {formatDateTime(order.paymentStage1.paidAt)}</div>
                 )}
+                {order.paymentStage1?.status !== 'paid' && order.status === 'awaiting_payment' && (
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ marginTop: 'var(--space-2)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    onClick={() => handleOpenPaymentModal(1, order.paymentStage1.amount)}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>payments</span>
+                    Bayar Tahap 1
+                  </button>
+                )}
               </div>
 
               <div className="payment-stage" style={{ marginTop: 'var(--space-4)' }}>
@@ -283,6 +380,16 @@ export default function OrderDetail() {
                 )}
                 {order.paymentStage2?.paidAt && (
                   <div className="payment-stage-date">Dibayar: {formatDateTime(order.paymentStage2.paidAt)}</div>
+                )}
+                {order.paymentStage1?.status === 'paid' && order.paymentStage2?.status !== 'paid' && (order.paymentStage2?.amount || 0) > 0 && (
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ marginTop: 'var(--space-2)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    onClick={() => handleOpenPaymentModal(2, order.paymentStage2.amount)}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>payments</span>
+                    Bayar Tahap 2
+                  </button>
                 )}
               </div>
             </div>
@@ -309,6 +416,80 @@ export default function OrderDetail() {
           )}
         </div>
       </div>
+
+      {/* Simulated Payment Modal */}
+      {showPaymentModal && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: 'var(--space-6)', position: 'relative', background: 'white' }}>
+            <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: '700', color: 'var(--text-primary)', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>payments</span>
+              Simulasi Pembayaran Tahap {paymentStage}
+            </h3>
+            
+            <div style={{ background: 'var(--success-bg)', padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)', textAlign: 'center' }}>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Tagihan</div>
+              <div style={{ fontSize: 'var(--text-2xl)', fontWeight: '800', color: 'var(--primary-start)' }}>{formatCurrency(paymentAmount)}</div>
+            </div>
+
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <label style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '8px' }}>Pilih Metode Pembayaran</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {PAYMENT_METHODS.map(method => (
+                  <div 
+                    key={method.id} 
+                    onClick={() => setSelectedMethod(method.id)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between', 
+                      padding: '12px var(--space-4)', 
+                      borderRadius: 'var(--radius-md)', 
+                      border: `1.5px solid ${selectedMethod === method.id ? 'var(--primary-start)' : 'var(--glass-border)'}`,
+                      background: selectedMethod === method.id ? 'var(--success-bg)' : 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '20px' }}>{method.icon}</span>
+                      <span style={{ fontSize: 'var(--text-sm)', fontWeight: '600', color: 'var(--text-primary)' }}>{method.name}</span>
+                    </div>
+                    {selectedMethod === method.id && (
+                      <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)', fontSize: '18px' }}>check_circle</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
+              <button 
+                className="btn btn-ghost" 
+                style={{ flex: 1 }}
+                onClick={() => setShowPaymentModal(false)}
+                disabled={isProcessingPayment}
+              >
+                Batal
+              </button>
+              <button 
+                className="btn btn-primary" 
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                onClick={handleProcessPayment}
+                disabled={isProcessingPayment}
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <div className="spinner sm" style={{ borderLeftColor: 'white' }}></div>
+                    Memproses...
+                  </>
+                ) : (
+                  <>Konfirmasi</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

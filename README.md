@@ -77,3 +77,7 @@ Setelah dijalankan:
 Seluruh fitur-fitur dan perbaikan visual ini disimpan secara aman dan teratur pada branch kerja lokal baru Anda:
 *   **Branch**: `versi-dean`
 *   **Commit pertama**: `"code pertama"`
+
+**Akun Testing:**
+*   Email: admin@titipin.com
+*   Password: `admin123`

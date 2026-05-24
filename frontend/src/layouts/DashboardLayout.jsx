@@ -6,14 +6,15 @@ import { getInitials } from '../utils/helpers';
 import Store from '../data/store';
 import './DashboardLayout.css';
 
-export default function DashboardLayout({ children, isAdmin = false }) {
-  const { user, logout } = useAuth();
+export default function DashboardLayout({ children, isAdmin: propIsAdmin }) {
+  const { user, logout, isAdmin: authIsAdmin } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
+  const isAdmin = propIsAdmin !== undefined ? propIsAdmin : authIsAdmin;
   const navItems = isAdmin ? NAV_ITEMS_ADMIN : NAV_ITEMS_CUSTOMER;
   const notifications = Store.getNotifications(user?.id) || [];
   const unreadCount = notifications.filter(n => !n.read).length;
