@@ -106,15 +106,18 @@ export const PAYMENT_METHODS = [
 ];
 
 export const NAV_ITEMS_CUSTOMER = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊', path: '/dashboard' },
-  { id: 'create-order', label: 'Buat Pesanan', icon: '➕', path: '/order/create' },
-  { id: 'orders', label: 'Riwayat Pesanan', icon: '📋', path: '/orders' },
-  { id: 'profile', label: 'Profil Saya', icon: '👤', path: '/profile' },
+  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/dashboard' },
+  { id: 'create-order', label: 'Buat Pesanan', icon: 'add_circle', path: '/order/create' },
+  { id: 'warehouse', label: 'Gudang Virtual', icon: 'warehouse', path: '/warehouse' },
+  { id: 'orders', label: 'Riwayat Pesanan', icon: 'package_2', path: '/orders' },
+  { id: 'profile', label: 'Profil Saya', icon: 'person', path: '/profile' },
 ];
 
 export const NAV_ITEMS_ADMIN = [
-  { id: 'admin-dashboard', label: 'Dashboard', icon: '📊', path: '/admin' },
-  { id: 'admin-orders', label: 'Kelola Pesanan', icon: '📦', path: '/admin/orders' },
-  { id: 'admin-users', label: 'Kelola User', icon: '👥', path: '/admin/users' },
-  { id: 'admin-settings', label: 'Pengaturan', icon: '⚙️', path: '/admin/settings' },
+  { id: 'admin-dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin' },
+  { id: 'admin-orders', label: 'Kelola Pesanan', icon: 'package_2', path: '/admin/orders' },
+  { id: 'admin-warehouse', label: 'Gudang Virtual', icon: 'warehouse', path: '/warehouse' },
+  { id: 'admin-users', label: 'Kelola User', icon: 'group', path: '/admin/users' },
+  { id: 'admin-settings', label: 'Pengaturan', icon: 'settings', path: '/admin/settings' },
 ];
+

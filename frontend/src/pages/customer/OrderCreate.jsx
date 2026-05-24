@@ -179,8 +179,8 @@ export default function OrderCreate() {
         {/* Main Form */}
         <div className="order-form-main">
           {/* Country Selector */}
-          <div className="form-section-title">
-            <span>🌍</span> Pilih Negara Asal
+          <div className="form-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>public</span> Pilih Negara Asal
           </div>
           <div className="country-selector">
             {COUNTRIES.map(c => (
@@ -197,8 +197,8 @@ export default function OrderCreate() {
           </div>
 
           {/* Items */}
-          <div className="form-section-title">
-            <span>🛒</span> Detail Barang
+          <div className="form-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>shopping_basket</span> Detail Barang
           </div>
           {items.map((item, idx) => (
             <div key={item.id} className="item-card glass-card">
@@ -209,8 +209,9 @@ export default function OrderCreate() {
                     className="item-card-remove"
                     onClick={() => removeItem(item.id)}
                     title="Hapus item"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    🗑️
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--error)' }}>delete</span>
                   </button>
                 )}
               </div>
@@ -295,13 +296,13 @@ export default function OrderCreate() {
             </div>
           ))}
 
-          <button className="add-item-btn" onClick={addItem}>
-            ➕ Tambah Item Lain
+          <button className="add-item-btn" onClick={addItem} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span> Tambah Item Lain
           </button>
 
           {/* Shipping Address */}
-          <div className="form-section-title">
-            <span>📍</span> Alamat Pengiriman
+          <div className="form-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>location_on</span> Alamat Pengiriman
           </div>
           {user?.addresses?.length > 0 ? (
             <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -312,7 +313,10 @@ export default function OrderCreate() {
                   onClick={() => setSelectedAddressId(addr.id)}
                 >
                   <div className="address-label-row">
-                    <span className="address-label-tag">📍 {addr.label}</span>
+                    <span className="address-label-tag" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--primary-start)' }}>location_on</span>
+                      {addr.label}
+                    </span>
                     {addr.isDefault && <span className="address-default-badge">Utama</span>}
                   </div>
                   <div className="address-detail-text">
@@ -334,8 +338,8 @@ export default function OrderCreate() {
           )}
 
           {/* NPWP Section */}
-          <div className="form-section-title">
-            <span>🏛️</span> NPWP (Opsional)
+          <div className="form-section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>badge</span> NPWP (Opsional)
           </div>
           <div className="npwp-toggle" onClick={() => setUseNpwp(!useNpwp)}>
             <div className={`npwp-toggle-switch ${useNpwp ? 'active' : ''}`} />
@@ -348,7 +352,7 @@ export default function OrderCreate() {
               <label className="form-label">Nomor NPWP</label>
               <input
                 type="text"
-                className="form-input"
+                 className="form-input"
                 placeholder="XX.XXX.XXX.X-XXX.XXX"
                 value={npwpValue}
                 onChange={e => setNpwpValue(e.target.value)}
@@ -367,7 +371,10 @@ export default function OrderCreate() {
         <div className="estimation-panel">
           <div className="estimation-card">
             <div className="estimation-header">
-              <h3>💰 Estimasi Biaya</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--primary-start)' }}>calculate</span>
+                Estimasi Biaya
+              </h3>
               <p>Perkiraan total biaya pesanan Anda</p>
             </div>
             <div className="estimation-body">
@@ -408,7 +415,7 @@ export default function OrderCreate() {
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: 'var(--space-8) 0', color: 'var(--text-tertiary)' }}>
-                  <div style={{ fontSize: '32px', marginBottom: 'var(--space-3)' }}>🧮</div>
+                  <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--text-tertiary)', marginBottom: 'var(--space-3)' }}>calculate</span>
                   <p style={{ fontSize: 'var(--text-sm)' }}>
                     Pilih negara dan isi detail barang untuk melihat estimasi biaya
                   </p>
@@ -416,8 +423,9 @@ export default function OrderCreate() {
               )}
             </div>
             {estimation && (
-              <div className="estimation-note">
-                ⚠️ Harga final ongkir akan dikonfirmasi setelah barang sampai di gudang kami. Estimasi ini bersifat perkiraan.
+              <div className="estimation-note" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--warning)' }}>warning</span>
+                Harga final ongkir akan dikonfirmasi setelah barang sampai di gudang kami. Estimasi ini bersifat perkiraan.
               </div>
             )}
             <div className="estimation-footer">
@@ -425,7 +433,7 @@ export default function OrderCreate() {
                 className="btn btn-primary btn-lg"
                 onClick={handleSubmit}
                 disabled={submitting}
-                style={{ opacity: submitting ? 0.7 : 1 }}
+                style={{ opacity: submitting ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
                 {submitting ? (
                   <><span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Mengirim...</>

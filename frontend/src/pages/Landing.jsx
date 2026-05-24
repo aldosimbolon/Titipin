@@ -4,25 +4,35 @@ import { COUNTRIES } from '../data/constants';
 import { formatCurrency, calculateEstimate, getCountry } from '../utils/helpers';
 import './Landing.css';
 
-// Custom hook for scroll reveal
-function useReveal() {
+function RevealDiv({ children, className = '', ...props }) {
+  const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.classList.add('visible'); obs.unobserve(el); } },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          obs.unobserve(el);
+        }
+      },
       { threshold: 0.15 }
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  return ref;
-}
 
-function RevealDiv({ children, className = '', ...props }) {
-  const ref = useReveal();
-  return <div ref={ref} className={`reveal ${className}`} {...props}>{children}</div>;
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${isVisible ? 'visible' : ''} ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
 }
 
 const TESTIMONIALS = [
@@ -43,12 +53,12 @@ const FAQS = [
 ];
 
 const ADVANTAGES = [
-  { icon: '💎', title: 'Harga Transparan', desc: 'Semua biaya dihitung di awal, tanpa biaya tersembunyi' },
-  { icon: '🛡️', title: 'Garansi Barang', desc: 'Barang dicek di gudang sebelum dikirim ke Anda' },
-  { icon: '🌍', title: 'Gudang Luar Negeri', desc: 'Gudang sendiri di 6 negara untuk pengiriman lebih cepat' },
-  { icon: '💬', title: 'CS Responsif', desc: 'Tim support siap membantu via WhatsApp 24/7' },
-  { icon: '🚀', title: 'Pengiriman Cepat', desc: 'Estimasi 7-25 hari kerja sampai di tangan Anda' },
-  { icon: '🧾', title: 'Pengurusan Customs', desc: 'Kami urus semua dokumen bea cukai & pajak impor' },
+  { icon: 'payments', title: 'Harga Transparan', desc: 'Semua biaya dihitung di awal, tanpa biaya tersembunyi' },
+  { icon: 'verified_user', title: 'Garansi Barang', desc: 'Barang dicek di gudang sebelum dikirim ke Anda' },
+  { icon: 'language', title: 'Gudang Luar Negeri', desc: 'Gudang sendiri di 6 negara untuk pengiriman lebih cepat' },
+  { icon: 'forum', title: 'CS Responsif', desc: 'Tim support siap membantu via WhatsApp 24/7' },
+  { icon: 'speed', title: 'Pengiriman Cepat', desc: 'Estimasi 7-25 hari kerja sampai di tangan Anda' },
+  { icon: 'receipt_long', title: 'Pengurusan Customs', desc: 'Kami urus semua dokumen bea cukai & pajak impor' },
 ];
 
 export default function Landing() {
@@ -108,12 +118,12 @@ export default function Landing() {
   };
 
   return (
-    <div className="landing-page">
+    <div className="landing-page animate-fade-in">
       {/* NAVBAR */}
       <nav className={`landing-nav ${scrolled ? 'scrolled' : ''}`}>
-        <Link to="/" className="nav-logo">
-          <div className="nav-logo-icon">🛍️</div>
-          <span>TitipIn</span>
+        <Link to="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="/logo.png" alt="TitipIn Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+          <span style={{ fontSize: '24px', fontWeight: '700', color: 'var(--primary-start)' }}>TitipIn</span>
         </Link>
         <div className="nav-links">
           <a href="#cara-kerja" onClick={(e) => { e.preventDefault(); scrollTo('cara-kerja'); }}>Cara Kerja</a>
@@ -123,50 +133,83 @@ export default function Landing() {
         </div>
         <div className="nav-actions">
           <Link to="/login" className="btn btn-ghost" style={{ color: 'var(--text-secondary)' }}>Masuk</Link>
-          <Link to="/register" className="btn btn-primary">Daftar Gratis</Link>
+          <Link to="/register" className="btn btn-primary" style={{ background: 'var(--primary-gradient)', color: 'white' }}>Daftar Gratis</Link>
         </div>
-        <button className="nav-mobile-btn" onClick={() => navigate('/login')}>☰</button>
+        <button className="nav-mobile-btn" onClick={() => navigate('/login')}>
+          <span className="material-symbols-outlined">menu</span>
+        </button>
       </nav>
 
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-bg" />
-        <div className="hero-glow hero-glow-1" />
-        <div className="hero-glow hero-glow-2" />
-        <div className="hero-glow hero-glow-3" />
-        <div className="hero-content">
-          <div className="hero-badge">✨ Jasa Titip Beli Terpercaya #1</div>
-          <h1>Belanja dari Luar Negeri, Semudah Belanja Online</h1>
-          <p className="hero-subtitle">
-            Jasa titip beli terpercaya dari China, Amerika, Singapura, Korea, Inggris & Hong Kong.
-            Terima beres, bayar dalam Rupiah.
-          </p>
+      {/* HERO SECTION (Splitscreen Grid) */}
+      <section className="hero-split-section">
+        <div className="hero-split-grid">
+          <div className="hero-split-left">
+            <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(0, 105, 84, 0.08)', borderRadius: 'var(--radius-full)', fontWeight: '600', color: 'var(--primary-start)', fontSize: '12px', marginBottom: 'var(--space-2)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>public</span>
+              <span>Layanan Pembelian Global No. 1</span>
+            </div>
+            <h1 style={{ fontSize: 'clamp(2.2rem, 4vw, 3.6rem)', fontWeight: '800', lineHeight: '1.15', color: 'var(--text-primary)', margin: '0 0 var(--space-4)' }}>
+              Belanja Barang dari Luar Negeri <span style={{ color: 'var(--primary-start)', background: 'linear-gradient(135deg, #006954 0%, #00846a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Jadi Lebih Mudah</span>
+            </h1>
+            <p className="hero-subtitle" style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: '1.7', margin: '0 0 var(--space-6)', maxWidth: '580px' }}>
+              TitipIn membantu Anda membeli barang dari berbagai negara tanpa ribet urus cukai dan pengiriman internasional. Cukup titip link produk yang Anda inginkan, kami urus sisanya dengan transparansi penuh.
+            </p>
 
-          <div className="hero-search">
-            <div className="hero-search-inner">
-              <input
-                type="text"
-                className="hero-search-input"
-                placeholder="Paste link produk dari luar negeri..."
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
-              />
-              <button className="hero-search-btn" onClick={handleUrlSubmit}>
-                Cek Harga →
+            <div className="hero-search-container" style={{ width: '100%', maxWidth: '560px', marginBottom: 'var(--space-6)' }}>
+              <div className="hero-search-box" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '6px 8px 6px 16px', backgroundColor: 'white', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                <span className="material-symbols-outlined" style={{ color: 'var(--text-tertiary)' }}>link</span>
+                <input
+                  type="text"
+                  placeholder="Paste link produk dari luar negeri..."
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
+                  style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: 'var(--text-primary)', padding: '8px 0' }}
+                />
+                <button
+                  onClick={handleUrlSubmit}
+                  style={{ background: 'var(--primary-gradient)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 'var(--radius-lg)', fontWeight: '700', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
+                >
+                  Cek Harga
+                </button>
+              </div>
+            </div>
+
+            <div className="hero-action-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate('/register')}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: 'var(--radius-md)', fontWeight: '700', background: 'var(--primary-gradient)', color: 'white', border: 'none', cursor: 'pointer' }}
+              >
+                <span>Mulai Belanja</span>
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={() => scrollTo('layanan')}
+                style={{ padding: '12px 24px', borderRadius: 'var(--radius-md)', fontWeight: '700', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                Lihat Kurs &amp; Tarif
               </button>
             </div>
           </div>
 
-          <div className="hero-trust">
-            <div className="trust-item">
-              <span className="trust-value">10,000+</span> Pesanan
-            </div>
-            <div className="trust-item">
-              <span className="trust-value">6</span> Negara
-            </div>
-            <div className="trust-item">
-              ⭐ <span className="trust-value">4.9</span> Rating
+          <div className="hero-split-right">
+            <div className="hero-image-wrapper" style={{ position: 'relative', width: '100%', height: '480px', borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMH2Cl7IXYStwj7mTqj03SOTDBUsY9KJK-87ecG16hsgHWFbQ4ijjJ1GDyfylgqY2aclzmRPi96y6UHHNpbxuuwenQGiYzUH1aBZf-VbdKU0Hfx_ZTGPYmQs28VURGoByiARm_Wszx-Ru3jSkyhM4vt8_SkXO14cGLDuFtzIpoXlivW-WgLPEE3MGXDxGENwTrPZQy6-gY5cGi5al4Dt6AEwOqXEN8y_558MFY_8UOeJVg44oekyJbr0RajgyFtN3Tuw-9qsU1CkBf"
+                alt="Global Logistics Supply Chain"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div className="floating-status-card" style={{ position: 'absolute', bottom: '24px', right: '24px', background: 'rgba(255, 255, 255, 0.92)', backdropFilter: 'blur(12px)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-start)' }}>
+                  <span className="material-symbols-outlined fill" style={{ fontSize: '20px' }}>check_circle</span>
+                </div>
+                <div>
+                  <span style={{ display: 'block', fontSize: '10px', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status Pengiriman</span>
+                  <span style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>Tiba di Jakarta</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -189,8 +232,14 @@ export default function Landing() {
                   {c.stores.map(s => <span key={s}>{s}</span>)}
                 </div>
                 <div className="country-meta">
-                  <span>📦 {c.deliveryDays} hari</span>
-                  <span>💰 {formatCurrency(c.shippingPerKg)}/kg</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>schedule</span>
+                    {c.deliveryDays} hari
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>payments</span>
+                    {formatCurrency(c.shippingPerKg)}/kg
+                  </span>
                 </div>
               </RevealDiv>
             ))}
@@ -207,15 +256,15 @@ export default function Landing() {
           </RevealDiv>
           <div className="steps-container">
             {[
-              { icon: '📋', title: 'Paste Link Produk', desc: 'Temukan produk di toko online luar negeri & paste linknya' },
-              { icon: '💰', title: 'Dapat Harga Total', desc: 'Kami hitung harga produk + ongkir + pajak dalam Rupiah' },
-              { icon: '💳', title: 'Bayar & Tunggu', desc: 'Bayar via transfer/e-wallet, kami belikan & kirim ke gudang' },
-              { icon: '📦', title: 'Terima Barang', desc: 'Barang sampai di rumah Anda, aman & terjamin' },
+              { icon: 'link', title: 'Paste Link Produk', desc: 'Temukan produk di toko online luar negeri & paste linknya' },
+              { icon: 'calculate', title: 'Dapat Harga Total', desc: 'Kami hitung harga produk + ongkir + pajak dalam Rupiah' },
+              { icon: 'payments', title: 'Bayar & Tunggu', desc: 'Bayar via transfer/e-wallet, kami belikan & kirim ke gudang' },
+              { icon: 'local_shipping', title: 'Terima Barang', desc: 'Barang sampai di rumah Anda, aman & terjamin' },
             ].map((step, i) => (
               <RevealDiv key={i} className="step-card" style={{ animationDelay: `${i * 0.15}s` }}>
                 <div className="step-icon">
                   <span className="step-number">{i + 1}</span>
-                  {step.icon}
+                  <span className="material-symbols-outlined" style={{ fontSize: '32px', color: 'var(--primary-start)' }}>{step.icon}</span>
                 </div>
                 <h3>{step.title}</h3>
                 <p>{step.desc}</p>
@@ -235,7 +284,9 @@ export default function Landing() {
           <div className="advantages-grid">
             {ADVANTAGES.map((adv, i) => (
               <RevealDiv key={i} className="advantage-card" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="advantage-icon">{adv.icon}</div>
+                <div className="advantage-icon">
+                  <span className="material-symbols-outlined" style={{ fontSize: '28px', color: 'var(--primary-start)' }}>{adv.icon}</span>
+                </div>
                 <h3>{adv.title}</h3>
                 <p>{adv.desc}</p>
               </RevealDiv>
@@ -368,7 +419,7 @@ export default function Landing() {
               <RevealDiv key={i} className={`faq-item ${openFaq === i ? 'open' : ''}`} style={{ animationDelay: `${i * 0.05}s` }}>
                 <button className="faq-question" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                   {faq.q}
-                  <span className="faq-chevron">▼</span>
+                  <span className="faq-chevron material-symbols-outlined">expand_more</span>
                 </button>
                 <div className="faq-answer">
                   <div className="faq-answer-inner">{faq.a}</div>
@@ -397,9 +448,9 @@ export default function Landing() {
       <footer className="landing-footer">
         <div className="footer-grid">
           <div className="footer-brand">
-            <div className="nav-logo">
-              <div className="nav-logo-icon">🛍️</div>
-              <span>TitipIn</span>
+            <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--space-4)' }}>
+              <img src="/logo.png" alt="TitipIn Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+              <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--primary-start)' }}>TitipIn</span>
             </div>
             <p>Platform jasa titip beli terpercaya dari luar negeri. Belanja produk impian dari 6 negara dengan mudah, aman, dan transparan.</p>
           </div>
