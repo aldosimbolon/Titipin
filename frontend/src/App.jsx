@@ -4,6 +4,7 @@ import { ToastProvider } from './context/ToastContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import LegalPage from './pages/legal/LegalPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/customer/Dashboard';
 import OrderCreate from './pages/customer/OrderCreate';
@@ -61,6 +62,8 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+            <Route path="/syarat-ketentuan" element={<LegalPage type="terms" />} />
+            <Route path="/kebijakan-privasi" element={<LegalPage type="privacy" />} />
 
             {/* Customer */}
             <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />

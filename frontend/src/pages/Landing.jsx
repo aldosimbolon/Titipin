@@ -437,7 +437,7 @@ export default function Landing() {
           <p>Daftar sekarang dan mulai belanja produk impian Anda dari seluruh dunia</p>
           <div className="cta-buttons">
             <Link to="/register" className="cta-btn-white">Daftar Gratis</Link>
-            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="cta-btn-outline-white">
+            <a href="https://wa.me/6285361800094" target="_blank" rel="noopener noreferrer" className="cta-btn-outline-white">
               Hubungi Kami
             </a>
           </div>
@@ -466,16 +466,16 @@ export default function Landing() {
             <h4>Bantuan</h4>
             <ul>
               <li><a href="#faq" onClick={(e) => { e.preventDefault(); scrollTo('faq'); }}>FAQ</a></li>
-              <li><a href="#">Syarat & Ketentuan</a></li>
-              <li><a href="#">Kebijakan Privasi</a></li>
+              <li><Link to="/syarat-ketentuan">Syarat & Ketentuan</Link></li>
+              <li><Link to="/kebijakan-privasi">Kebijakan Privasi</Link></li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>Kontak</h4>
             <ul>
-              <li><a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer">📱 WhatsApp</a></li>
-              <li><a href="mailto:hello@titipin.com">📧 hello@titipin.com</a></li>
-              <li><a href="#">📍 Jakarta, Indonesia</a></li>
+              <li><a href="https://wa.me/6285361800094" target="_blank" rel="noopener noreferrer">📱 WhatsApp</a></li>
+              <li><a href="mailto:aldosimbolon017@gmail.com">📧 aldosimbolon017@gmail.com</a></li>
+              <li><a href="https://maps.app.goo.gl/UkGxRUYDgehRreuc6">📍 Medan, Indonesia</a></li>
             </ul>
           </div>
         </div>
