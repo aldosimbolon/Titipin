@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 
-// Koneksi di-cache supaya aman dipanggil berkali-kali
-// (dipakai per-request di Vercel/serverless, dan sekali saat start lokal).
+// Koneksi di-cache dan aman dipanggil berkali-kali (dipakai per-request di Vercel/serverless,
+// dan sekali saat start lokal).
+// State mongoose.connection.readyState: 0 = terputus, 1 = terhubung, 2 = sedang menyambung
 let connecting = null;
 
 export async function connectDB() {
@@ -13,10 +14,13 @@ export async function connectDB() {
     );
   }
 
-  // 1 = connected
+  // Sudah terhubung
   if (mongoose.connection.readyState === 1) return mongoose.connection;
-  if (connecting) return connecting;
 
+  // Sedang proses menyambung: tunggu yang sedang berjalan
+  if (mongoose.connection.readyState === 2 && connecting) return connecting;
+
+  // Terputus (mis. function serverless sempat "tidur" lalu socket ditutup Atlas): sambung ulang
   mongoose.set('strictQuery', true);
 
   connecting = mongoose
