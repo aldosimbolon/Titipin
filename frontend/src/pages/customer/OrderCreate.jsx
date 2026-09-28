@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Store from '../../data/store';
 import { COUNTRIES } from '../../data/constants';
-import { formatCurrency, generateOrderId, generateId, calculateEstimate, toIDR } from '../../utils/helpers';
+import { formatCurrency, generateId, calculateEstimate, toIDR } from '../../utils/helpers';
 import './Customer.css';
 
 const emptyItem = () => ({
@@ -98,7 +98,7 @@ export default function OrderCreate() {
     return est;
   }, [selectedCountry, country, items, useNpwp]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     if (!selectedCountry) {
       toast.error('Pilih Negara', 'Silakan pilih negara asal barang');
@@ -119,7 +119,6 @@ export default function OrderCreate() {
     setSubmitting(true);
 
     const selectedAddr = user.addresses.find(a => a.id === selectedAddressId);
-    const orderId = generateOrderId();
 
     const orderItems = validItems.map(item => ({
       id: generateId(),
@@ -133,39 +132,20 @@ export default function OrderCreate() {
       notes: item.notes,
     }));
 
-    const order = {
-      id: orderId,
-      userId: user.id,
-      country: selectedCountry,
-      status: 'pending_quote',
-      items: orderItems,
-      shippingAddress: selectedAddr,
-      npwp: useNpwp ? npwpValue : '',
-      estimatedCost: estimation ? { ...estimation } : null,
-      finalCost: null,
-      paymentStage1: { amount: 0, status: 'unpaid', paidAt: null, method: null },
-      paymentStage2: { amount: 0, status: 'unpaid', paidAt: null, method: null },
-      statusHistory: [
-        { status: 'pending_quote', date: new Date().toISOString(), note: 'Pesanan dibuat oleh pelanggan' }
-      ],
-      notes: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    Store.addOrder(order);
-    Store.addNotification({
-      id: generateId(),
-      userId: user.id,
-      type: 'info',
-      title: 'Pesanan Dibuat',
-      message: `Pesanan ${orderId} berhasil dibuat. Menunggu konfirmasi harga.`,
-      read: false,
-      createdAt: new Date().toISOString(),
-    });
-
-    toast.success('Pesanan Berhasil!', `Pesanan ${orderId} telah dikirim`);
-    navigate(`/order/${orderId}`);
+    try {
+      const created = await Store.addOrder({
+        country: selectedCountry,
+        items: orderItems,
+        shippingAddress: selectedAddr,
+        npwp: useNpwp ? npwpValue : '',
+        estimatedCost: estimation ? { ...estimation } : null,
+      });
+      toast.success('Pesanan Berhasil!', `Pesanan ${created.id} telah dikirim`);
+      navigate(`/order/${created.id}`);
+    } catch (e) {
+      setSubmitting(false);
+      toast.error('Gagal Membuat Pesanan', e.message);
+    }
   };
 
   return (

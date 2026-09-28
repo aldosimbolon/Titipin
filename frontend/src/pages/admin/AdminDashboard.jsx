@@ -201,8 +201,9 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    setOrders(Store.getOrders());
-    setUsers(Store.getUsers());
+    Promise.all([Store.getOrders(), Store.getUsers()])
+      .then(([o, u]) => { setOrders(o); setUsers(u); })
+      .catch(() => {});
   }, []);
 
   // Stats calculations

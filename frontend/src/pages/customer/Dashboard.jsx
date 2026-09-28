@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      setOrders(Store.getOrdersByUserId(user.id));
+      Store.getOrdersByUserId(user.id).then(setOrders).catch(() => {});
     }
   }, [user]);
 

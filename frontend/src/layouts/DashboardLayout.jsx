@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { NAV_ITEMS_CUSTOMER, NAV_ITEMS_ADMIN } from '../data/constants';
 import { getInitials } from '../utils/helpers';
@@ -16,7 +16,20 @@ export default function DashboardLayout({ children, isAdmin: propIsAdmin }) {
 
   const isAdmin = propIsAdmin !== undefined ? propIsAdmin : authIsAdmin;
   const navItems = isAdmin ? NAV_ITEMS_ADMIN : NAV_ITEMS_CUSTOMER;
-  const notifications = Store.getNotifications(user?.id) || [];
+  const location = useLocation();
+  const [notifications, setNotifications] = useState([]);
+
+  // Ambil notifikasi dari server: saat pindah halaman, saat dropdown dibuka, dan tiap 30 detik
+  useEffect(() => {
+    if (!user) return undefined;
+    let active = true;
+    const load = () => Store.getNotifications()
+      .then(n => { if (active) setNotifications(n); })
+      .catch(() => {});
+    load();
+    const timer = setInterval(load, 30000);
+    return () => { active = false; clearInterval(timer); };
+  }, [user?.id, showNotif, location.pathname]);
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = () => {
@@ -25,7 +38,8 @@ export default function DashboardLayout({ children, isAdmin: propIsAdmin }) {
   };
 
   const handleNotifClick = (notif) => {
-    Store.markNotificationRead(notif.id);
+    Store.markNotificationRead(notif.id).catch(() => {});
+    setNotifications(prev => prev.map(n => (n.id === notif.id ? { ...n, read: true } : n)));
     setShowNotif(false);
   };
 

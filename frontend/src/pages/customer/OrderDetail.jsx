@@ -1,15 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Store from '../../data/store';
 import { ORDER_STATUSES } from '../../data/constants';
-import { formatCurrency, formatDate, formatDateTime, getCountry, generateId } from '../../utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, getCountry } from '../../utils/helpers';
 import './Customer.css';
 
 export default function OrderDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
@@ -32,9 +30,14 @@ export default function OrderDetail() {
   ];
 
   useEffect(() => {
-    const o = Store.getOrderById(id);
-    if (!o) { setNotFound(true); return; }
-    setOrder(o);
+    const load = async () => {
+      try {
+        const o = await Store.getOrderById(id);
+        if (!o) { setNotFound(true); return; }
+        setOrder(o);
+      } catch { setNotFound(true); }
+    };
+    load();
   }, [id]);
 
   const country = useMemo(() => order ? getCountry(order.country) : null, [order]);
@@ -52,82 +55,35 @@ export default function OrderDetail() {
     setShowPaymentModal(true);
   };
 
-  const handleProcessPayment = () => {
+  const handleProcessPayment = async () => {
     setIsProcessingPayment(true);
-    setTimeout(() => {
-      const now = new Date().toISOString();
-      const updatedFields = {};
-
-      if (paymentStage === 1) {
-        updatedFields.paymentStage1 = {
-          amount: paymentAmount,
-          status: 'paid',
-          paidAt: now,
-          method: selectedMethod
-        };
-        updatedFields.status = 'purchased';
-        updatedFields.statusHistory = [
-          ...(order.statusHistory || []),
-          {
-            status: 'purchased',
-            date: now,
-            note: `Pembayaran Tahap 1 sebesar ${formatCurrency(paymentAmount)} berhasil diverifikasi via ${selectedMethod.toUpperCase()}.`
-          }
-        ];
-      } else {
-        updatedFields.paymentStage2 = {
-          amount: paymentAmount,
-          status: 'paid',
-          paidAt: now,
-          method: selectedMethod
-        };
-        updatedFields.statusHistory = [
-          ...(order.statusHistory || []),
-          {
-            status: order.status,
-            date: now,
-            note: `Pembayaran Tahap 2 (Ongkos Kirim Domestik) sebesar ${formatCurrency(paymentAmount)} berhasil diverifikasi via ${selectedMethod.toUpperCase()}.`
-          }
-        ];
-      }
-
-      Store.updateOrder(order.id, updatedFields);
-      setOrder(prev => ({
-        ...prev,
-        ...updatedFields
-      }));
-
-      Store.addNotification({
-        id: generateId(),
-        userId: user.id,
-        type: 'info',
-        title: `Pembayaran Tahap ${paymentStage} Berhasil`,
-        message: `Pembayaran sebesar ${formatCurrency(paymentAmount)} untuk pesanan ${order.id} berhasil terverifikasi.`,
-        read: false,
-        createdAt: now
-      });
-
+    try {
+      // Simulasi proses gateway pembayaran, lalu verifikasi ke server
+      await new Promise((r) => setTimeout(r, 1200));
+      const updated = await Store.payOrder(order.id, { stage: paymentStage, method: selectedMethod });
+      setOrder(updated);
       toast.success(
         'Pembayaran Sukses!',
         `Pembayaran Tahap ${paymentStage} berhasil diverifikasi secara instan.`
       );
-
-      setIsProcessingPayment(false);
       setShowPaymentModal(false);
-    }, 1200);
+    } catch (e) {
+      toast.error('Pembayaran Gagal', e.message);
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!newNote.trim()) return;
-    const notes = [...(order.notes || []), {
-      from: 'user',
-      message: newNote.trim(),
-      date: new Date().toISOString(),
-    }];
-    Store.updateOrder(order.id, { notes });
-    setOrder(prev => ({ ...prev, notes }));
-    setNewNote('');
-    toast.success('Catatan Terkirim', 'Pesan Anda telah dikirim ke admin');
+    try {
+      const notes = await Store.addOrderNote(order.id, newNote.trim());
+      setOrder(prev => ({ ...prev, notes }));
+      setNewNote('');
+      toast.success('Catatan Terkirim', 'Pesan Anda telah dikirim ke admin');
+    } catch (e) {
+      toast.error('Gagal', e.message);
+    }
   };
 
   if (notFound) {

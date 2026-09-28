@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { request, getToken, setToken, clearToken } from '../data/api';
 import Store from '../data/store';
 
 const AuthContext = createContext(null);
@@ -7,85 +8,83 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Saat app dibuka: kalau ada token tersimpan, validasi ke server (GET /auth/me)
   useEffect(() => {
-    const session = Store.getSession();
-    if (session) {
-      const userData = Store.getUserById(session.userId);
-      if (userData) {
-        setUser(userData);
-      } else {
-        Store.clearSession();
+    const restore = async () => {
+      if (getToken()) {
+        try {
+          const data = await request('/auth/me');
+          setUser(data.user);
+        } catch {
+          clearToken();
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    restore();
   }, []);
 
-  const login = (email, password) => {
-    const userData = Store.getUserByEmail(email);
-    if (!userData) return { success: false, error: 'Email tidak ditemukan' };
-    if (userData.password !== password) return { success: false, error: 'Password salah' };
-    if (!userData.isActive) return { success: false, error: 'Akun tidak aktif' };
-
-    Store.setSession({ userId: userData.id, role: userData.role });
-    setUser(userData);
-    return { success: true, user: userData };
+  const login = async (email, password) => {
+    try {
+      const data = await request('/auth/login', { method: 'POST', body: { email, password } });
+      setToken(data.token);
+      setUser(data.user);
+      return { success: true, user: data.user };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
   };
 
-  const register = (data) => {
-    if (Store.getUserByEmail(data.email)) {
-      return { success: false, error: 'Email sudah terdaftar' };
+  const register = async (form) => {
+    try {
+      const data = await request('/auth/register', {
+        method: 'POST',
+        body: { name: form.name, email: form.email, password: form.password, phone: form.phone || '' },
+      });
+      setToken(data.token);
+
+      // Alamat awal (kalau diisi saat registrasi) disimpan sebagai alamat default
+      let finalUser = data.user;
+      if (form.address) {
+        finalUser = await Store.updateUserProfile(data.user.id, {
+          addresses: [{
+            label: 'Utama',
+            recipient: form.name,
+            phone: form.phone || '',
+            address: form.address,
+            city: form.city || '',
+            province: form.province || '',
+            postalCode: form.postalCode || '',
+            isDefault: true,
+          }],
+        });
+      }
+      setUser(finalUser);
+      return { success: true, user: finalUser };
+    } catch (e) {
+      return { success: false, error: e.message };
     }
-
-    const newUser = {
-      id: 'user' + Date.now().toString(36),
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      phone: data.phone || '',
-      role: 'customer',
-      avatar: null,
-      npwp: '',
-      addresses: data.address
-        ? [
-            {
-              id: 'addr' + Date.now().toString(36),
-              label: 'Utama',
-              recipient: data.name,
-              phone: data.phone || '',
-              address: data.address,
-              city: data.city || '',
-              province: data.province || '',
-              postalCode: data.postalCode || '',
-              isDefault: true,
-            },
-          ]
-        : [],
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    Store.addUser(newUser);
-    Store.setSession({ userId: newUser.id, role: newUser.role });
-    setUser(newUser);
-    return { success: true, user: newUser };
   };
 
   const logout = () => {
-    Store.clearSession();
+    clearToken();
     setUser(null);
   };
 
-  const updateProfile = (updates) => {
-    if (!user) return;
-    const updated = Store.updateUser(user.id, updates);
-    if (updated) setUser(updated);
+  // updates: { name, phone, npwp, addresses, password, currentPassword }
+  const updateProfile = async (updates) => {
+    if (!user) return null;
+    const updated = await Store.updateUserProfile(user.id, updates);
+    setUser(updated);
     return updated;
   };
 
-  const refreshUser = () => {
+  const refreshUser = async () => {
     if (!user) return;
-    const updated = Store.getUserById(user.id);
-    if (updated) setUser(updated);
+    try {
+      const data = await request('/auth/me');
+      setUser(data.user);
+    } catch { /* abaikan */ }
   };
 
   return (

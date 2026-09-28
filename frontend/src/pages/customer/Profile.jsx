@@ -6,7 +6,7 @@ import { formatDate, getInitials, generateId } from '../../utils/helpers';
 import './Customer.css';
 
 export default function Profile() {
-  const { user, updateProfile, refreshUser } = useAuth();
+  const { user, updateProfile } = useAuth();
   const toast = useToast();
 
   const [form, setForm] = useState({
@@ -23,17 +23,21 @@ export default function Profile() {
   const [editAddrId, setEditAddrId] = useState(null);
   const [addrForm, setAddrForm] = useState({ label: '', recipient: '', phone: '', address: '', city: '', province: '', postalCode: '' });
 
-  const handleProfileSave = () => {
+  const handleProfileSave = async () => {
     if (!form.name.trim()) { toast.error('Error', 'Nama tidak boleh kosong'); return; }
-    updateProfile({ name: form.name, phone: form.phone, npwp: form.npwp });
-    toast.success('Berhasil', 'Profil berhasil diperbarui');
+    try {
+      await updateProfile({ name: form.name, phone: form.phone, npwp: form.npwp });
+      toast.success('Berhasil', 'Profil berhasil diperbarui');
+    } catch (e) { toast.error('Error', e.message); }
   };
 
-  const handlePasswordChange = () => {
-    if (pwForm.old !== user.password) { toast.error('Error', 'Password lama salah'); return; }
+  const handlePasswordChange = async () => {
+    if (!pwForm.old) { toast.error('Error', 'Password lama wajib diisi'); return; }
     if (pwForm.new.length < 6) { toast.error('Error', 'Password baru minimal 6 karakter'); return; }
     if (pwForm.new !== pwForm.confirm) { toast.error('Error', 'Konfirmasi password tidak cocok'); return; }
-    updateProfile({ password: pwForm.new });
+    try {
+      await updateProfile({ password: pwForm.new, currentPassword: pwForm.old });
+    } catch (e) { toast.error('Error', e.message); return; }
     setPwForm({ old: '', new: '', confirm: '' });
     setShowPw(false);
     toast.success('Berhasil', 'Password berhasil diubah');
@@ -45,7 +49,7 @@ export default function Profile() {
     setShowAddrForm(false);
   };
 
-  const handleAddrSave = () => {
+  const handleAddrSave = async () => {
     if (!addrForm.label || !addrForm.recipient || !addrForm.address || !addrForm.city) {
       toast.error('Error', 'Lengkapi semua field alamat'); return;
     }
@@ -58,8 +62,7 @@ export default function Profile() {
       addresses.push({ id: 'addr' + generateId(), ...addrForm, isDefault: isFirst });
       toast.success('Berhasil', 'Alamat baru ditambahkan');
     }
-    updateProfile({ addresses });
-    refreshUser();
+    try { await updateProfile({ addresses }); } catch (e) { toast.error('Error', e.message); return; }
     resetAddrForm();
   };
 
@@ -69,19 +72,15 @@ export default function Profile() {
     setShowAddrForm(true);
   };
 
-  const handleAddrDelete = (addrId) => {
+  const handleAddrDelete = async (addrId) => {
     const addresses = (user.addresses || []).filter(a => a.id !== addrId);
     if (addresses.length > 0 && !addresses.some(a => a.isDefault)) addresses[0].isDefault = true;
-    updateProfile({ addresses });
-    refreshUser();
-    toast.success('Berhasil', 'Alamat dihapus');
+    try { await updateProfile({ addresses }); toast.success('Berhasil', 'Alamat dihapus'); } catch (e) { toast.error('Error', e.message); }
   };
 
-  const handleSetDefault = (addrId) => {
+  const handleSetDefault = async (addrId) => {
     const addresses = (user.addresses || []).map(a => ({ ...a, isDefault: a.id === addrId }));
-    updateProfile({ addresses });
-    refreshUser();
-    toast.success('Berhasil', 'Alamat utama diperbarui');
+    try { await updateProfile({ addresses }); toast.success('Berhasil', 'Alamat utama diperbarui'); } catch (e) { toast.error('Error', e.message); }
   };
 
   return (

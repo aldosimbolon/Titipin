@@ -10,7 +10,7 @@ export default function AdminSettings() {
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
-    setSettings(Store.getSettings());
+    Store.getSettings().then(setSettings).catch((e) => toast.error('Gagal memuat pengaturan', e.message));
   }, []);
 
   if (!settings) return <div className="page-loader"><div className="spinner lg"></div></div>;
@@ -26,36 +26,33 @@ export default function AdminSettings() {
     }));
   };
 
-  const handleSaveStore = () => {
-    Store.updateSettings({
-      storeName: settings.storeName,
-      storeTagline: settings.storeTagline,
-      whatsapp: settings.whatsapp,
-      email: settings.email,
-    });
-    toast.success('Berhasil', 'Informasi toko berhasil disimpan');
+  const save = async (updates, message) => {
+    try {
+      await Store.updateSettings(updates);
+      toast.success('Berhasil', message);
+    } catch (e) {
+      toast.error('Gagal Menyimpan', e.message);
+    }
   };
 
-  const handleSaveRates = () => {
-    Store.updateSettings({
-      serviceFeePercent: parseFloat(settings.serviceFeePercent) || 6,
-      importDuty: parseFloat(settings.importDuty) || 7.5,
-      ppn: parseFloat(settings.ppn) || 11,
-      pphWithNpwp: parseFloat(settings.pphWithNpwp) || 10,
-      pphWithoutNpwp: parseFloat(settings.pphWithoutNpwp) || 20,
-    });
-    toast.success('Berhasil', 'Tarif layanan berhasil disimpan');
-  };
+  const handleSaveStore = () => save({
+    storeName: settings.storeName,
+    storeTagline: settings.storeTagline,
+    whatsapp: settings.whatsapp,
+    email: settings.email,
+  }, 'Informasi toko berhasil disimpan');
 
-  const handleSaveCurrency = () => {
-    Store.updateSettings({ exchangeRates: settings.exchangeRates });
-    toast.success('Berhasil', 'Kurs mata uang berhasil disimpan');
-  };
+  const handleSaveRates = () => save({
+    serviceFeePercent: parseFloat(settings.serviceFeePercent) || 6,
+    importDuty: parseFloat(settings.importDuty) || 7.5,
+    ppn: parseFloat(settings.ppn) || 11,
+    pphWithNpwp: parseFloat(settings.pphWithNpwp) || 10,
+    pphWithoutNpwp: parseFloat(settings.pphWithoutNpwp) || 20,
+  }, 'Tarif layanan berhasil disimpan');
 
-  const handleSaveShipping = () => {
-    Store.updateSettings({ shippingRates: settings.shippingRates });
-    toast.success('Berhasil', 'Tarif ongkir berhasil disimpan');
-  };
+  const handleSaveCurrency = () => save({ exchangeRates: settings.exchangeRates }, 'Kurs mata uang berhasil disimpan');
+
+  const handleSaveShipping = () => save({ shippingRates: settings.shippingRates }, 'Tarif ongkir berhasil disimpan');
 
   return (
     <div className="animate-fade-in-up">

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Store from '../../data/store';
-import { formatCurrency, generateId } from '../../utils/helpers';
+import { formatCurrency } from '../../utils/helpers';
 import { animate } from 'animejs';
 import './Customer.css';
 
@@ -16,12 +16,16 @@ export default function Warehouse() {
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
   // Fetch orders on load
-  const loadWarehouseOrders = () => {
+  const loadWarehouseOrders = async () => {
     if (!user) return;
-    const allOrders = isAdmin ? Store.getOrders() : Store.getOrdersByUserId(user.id);
-    // Only show items that are currently "at_warehouse" status
-    const warehouseItems = allOrders.filter(o => o.status === 'at_warehouse');
-    setOrders(warehouseItems);
+    try {
+      // Backend otomatis membatasi: customer hanya order miliknya, admin semua order
+      const allOrders = await Store.getOrders();
+      // Only show items that are currently "at_warehouse" status
+      setOrders(allOrders.filter(o => o.status === 'at_warehouse'));
+    } catch (e) {
+      toast.error('Gagal memuat data', e.message);
+    }
   };
 
   useEffect(() => {
@@ -118,44 +122,19 @@ export default function Warehouse() {
       y: -30,
       duration: 350,
       easing: 'easeInQuad',
-      complete: () => {
-        // Transition each selected order status to "customs"
-        selectedOrderIds.forEach(orderId => {
-          const order = Store.getOrderById(orderId);
-          if (order) {
-            const history = order.statusHistory || [];
-            Store.updateOrder(orderId, {
-              status: 'customs',
-              statusHistory: [
-                ...history,
-                {
-                  status: 'customs',
-                  date: new Date().toISOString(),
-                  note: 'Barang dikonsolidasi oleh pelanggan dan masuk proses customs bea cukai Indonesia'
-                }
-              ]
-            });
-          }
-        });
-
-        // Create a central notification
-        Store.addNotification({
-          id: generateId(),
-          userId: user.id,
-          type: 'info',
-          title: 'Konsolidasi Berhasil',
-          message: `${selectedOrderIds.length} item berhasil dikonsolidasi untuk pengiriman ke Indonesia.`,
-          read: false,
-          createdAt: new Date().toISOString(),
-        });
-
-        toast.success(
-          'Konsolidasi Sukses!',
-          `${selectedOrderIds.length} item diproses menuju Customs Indonesia`
-        );
-
-        // Reset UI state
-        setSelectedOrderIds([]);
+      complete: async () => {
+        try {
+          // Server mengubah status tiap order menjadi "customs" + mencatat riwayat & notifikasi
+          await Store.consolidateOrders(selectedOrderIds);
+          toast.success(
+            'Konsolidasi Sukses!',
+            `${selectedOrderIds.length} item diproses menuju Customs Indonesia`
+          );
+          setSelectedOrderIds([]);
+        } catch (e) {
+          toast.error('Konsolidasi Gagal', e.message);
+          animate(selector, { scale: 1, opacity: 1, y: 0, duration: 200 });
+        }
         loadWarehouseOrders();
       }
     });

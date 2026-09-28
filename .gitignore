@@ -40,3 +40,6 @@ frontend/out/
 # References and unused directories
 /REFERENCE/
 /animation ref/
+
+# Vercel
+.vercel

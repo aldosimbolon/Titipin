@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../../context/ToastContext';
 import Store from '../../data/store';
 import { COUNTRIES, ORDER_STATUSES } from '../../data/constants';
-import { formatCurrency, formatDate, formatDateTime, timeAgo, getCountry, truncate, getInitials, generateId } from '../../utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, timeAgo, getCountry, truncate, getInitials } from '../../utils/helpers';
 import './Admin.css';
 
 export default function AdminOrders() {
@@ -24,9 +24,14 @@ export default function AdminOrders() {
     importDuty: '', ppn: '', pph: '',
   });
 
-  const reload = () => {
-    setOrders(Store.getOrders());
-    setUsers(Store.getUsers());
+  const reload = async () => {
+    try {
+      const [o, u] = await Promise.all([Store.getOrders(), Store.getUsers()]);
+      setOrders(o);
+      setUsers(u);
+    } catch (e) {
+      toast.error('Gagal memuat data', e.message);
+    }
   };
 
   useEffect(() => { reload(); }, []);
@@ -51,21 +56,19 @@ export default function AdminOrders() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
-  const handleStatusChange = (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus) => {
     const statusDef = ORDER_STATUSES.find(s => s.id === newStatus);
-    Store.updateOrder(orderId, {
-      status: newStatus,
-      statusHistory: [
-        ...(Store.getOrderById(orderId)?.statusHistory || []),
-        { status: newStatus, date: new Date().toISOString(), note: `Status diubah ke ${statusDef?.label}` }
-      ]
-    });
-    reload();
-    toast.success('Status Diperbarui', `Pesanan diubah ke ${statusDef?.label}`);
+    try {
+      await Store.updateOrderStatus(orderId, { status: newStatus, note: `Status diubah ke ${statusDef?.label}` });
+      await reload();
+      toast.success('Status Diperbarui', `Pesanan diubah ke ${statusDef?.label}`);
+    } catch (e) {
+      toast.error('Gagal Memperbarui Status', e.message);
+    }
   };
 
-  const handleBulkStatus = (newStatus) => {
-    selected.forEach(orderId => handleStatusChange(orderId, newStatus));
+  const handleBulkStatus = async (newStatus) => {
+    await Promise.all([...selected].map(orderId => handleStatusChange(orderId, newStatus)));
     setSelected(new Set());
   };
 
@@ -98,7 +101,7 @@ export default function AdminOrders() {
     });
   };
 
-  const handlePricingSave = () => {
+  const handlePricingSave = async () => {
     if (!pricingOrder) return;
     const estimatedCost = {
       itemTotal: parseInt(pricingData.itemTotal) || 0,
@@ -110,35 +113,28 @@ export default function AdminOrders() {
     };
     estimatedCost.total = Object.values(estimatedCost).reduce((a, b) => a + b, 0);
 
-    Store.updateOrder(pricingOrder.id, {
-      estimatedCost,
-      status: 'awaiting_payment',
-      paymentStage1: { amount: estimatedCost.total, status: 'unpaid', paidAt: null, method: null },
-      statusHistory: [
-        ...(pricingOrder.statusHistory || []),
-        { status: 'awaiting_payment', date: new Date().toISOString(), note: `Harga ditetapkan: ${formatCurrency(estimatedCost.total)}` }
-      ]
-    });
-
-    Store.addNotification({
-      id: generateId(), userId: pricingOrder.userId, type: 'info',
-      title: 'Harga Sudah Ditetapkan',
-      message: `Pesanan ${pricingOrder.id} total ${formatCurrency(estimatedCost.total)}. Silakan lakukan pembayaran.`,
-      read: false, createdAt: new Date().toISOString(),
-    });
-
-    setPricingOrder(null);
-    reload();
-    toast.success('Berhasil', 'Harga berhasil ditetapkan dan dikirim ke customer');
+    try {
+      // Server mengubah status -> awaiting_payment, membuat tagihan tahap 1, dan mengirim notifikasi ke customer
+      await Store.setOrderQuote(pricingOrder.id, {
+        estimatedCost,
+        note: `Harga ditetapkan: ${formatCurrency(estimatedCost.total)}`,
+      });
+      setPricingOrder(null);
+      await reload();
+      toast.success('Berhasil', 'Harga berhasil ditetapkan dan dikirim ke customer');
+    } catch (e) {
+      toast.error('Gagal Menetapkan Harga', e.message);
+    }
   };
 
-  const handleAddAdminNote = (orderId, message) => {
-    const order = Store.getOrderById(orderId);
-    if (!order) return;
-    const notes = [...(order.notes || []), { from: 'admin', message, date: new Date().toISOString() }];
-    Store.updateOrder(orderId, { notes });
-    if (detailOrder?.id === orderId) setDetailOrder({ ...order, notes });
-    reload();
+  const handleAddAdminNote = async (orderId, message) => {
+    try {
+      const notes = await Store.addOrderNote(orderId, message);
+      setDetailOrder(prev => (prev && prev.id === orderId ? { ...prev, notes } : prev));
+      await reload();
+    } catch (e) {
+      toast.error('Gagal Mengirim Catatan', e.message);
+    }
   };
 
   return (

@@ -58,7 +58,7 @@ export default function Login() {
     // Simulate a short delay for UX
     await new Promise((r) => setTimeout(r, 600));
 
-    const result = login(form.email, form.password);
+    const result = await login(form.email, form.password);
     setLoading(false);
 
     if (!result.success) {

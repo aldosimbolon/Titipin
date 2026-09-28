@@ -12,9 +12,14 @@ export default function AdminUsers() {
   const [filter, setFilter] = useState('all');
   const [detailUser, setDetailUser] = useState(null);
 
-  const reload = () => {
-    setUsers(Store.getUsers());
-    setOrders(Store.getOrders());
+  const reload = async () => {
+    try {
+      const [u, o] = await Promise.all([Store.getUsers(), Store.getOrders()]);
+      setUsers(u);
+      setOrders(o);
+    } catch (e) {
+      toast.error('Gagal memuat data', e.message);
+    }
   };
 
   useEffect(() => { reload(); }, []);
@@ -43,12 +48,16 @@ export default function AdminUsers() {
     return { totalOrders, totalSpent };
   };
 
-  const toggleActive = (userId) => {
-    const user = Store.getUserById(userId);
+  const toggleActive = async (userId) => {
+    const user = users.find(u => u.id === userId);
     if (!user) return;
-    Store.updateUser(userId, { isActive: !user.isActive });
-    reload();
-    toast.success('Berhasil', `User ${user.isActive ? 'dinonaktifkan' : 'diaktifkan'}`);
+    try {
+      await Store.setUserActive(userId, !user.isActive);
+      await reload();
+      toast.success('Berhasil', `User ${user.isActive ? 'dinonaktifkan' : 'diaktifkan'}`);
+    } catch (e) {
+      toast.error('Gagal', e.message);
+    }
   };
 
   const openDetail = (user) => {

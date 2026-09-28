@@ -1,167 +1,99 @@
-// localStorage CRUD wrapper for TitipIn
-
-const PREFIX = 'titipin_';
+// Data layer Titipin. Dulu berbasis localStorage, sekarang memanggil REST API backend (MongoDB).
+// Semua method bersifat async -> gunakan `await` saat memanggilnya.
+import { request } from './api';
 
 const Store = {
-  get(key) {
+  // ---------- Users ----------
+  async getUsers() {
+    return (await request('/users')).users;
+  },
+
+  async getUserById(id) {
     try {
-      const data = localStorage.getItem(PREFIX + key);
-      return data ? JSON.parse(data) : null;
-    } catch {
-      return null;
+      return (await request(`/users/${id}`)).user;
+    } catch (e) {
+      if (e.status === 404) return null;
+      throw e;
     }
   },
 
-  set(key, value) {
+  async setUserActive(id, isActive) {
+    return (await request(`/users/${id}/status`, { method: 'PATCH', body: { isActive } })).user;
+  },
+
+  async updateUserProfile(id, updates) {
+    return (await request(`/users/${id}`, { method: 'PUT', body: updates })).user;
+  },
+
+  // ---------- Orders ----------
+  // Backend otomatis membatasi: customer hanya melihat order miliknya, admin melihat semua.
+  async getOrders() {
+    return (await request('/orders')).orders;
+  },
+
+  async getOrdersByUserId() {
+    return this.getOrders();
+  },
+
+  async getOrderById(id) {
     try {
-      localStorage.setItem(PREFIX + key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
+      return (await request(`/orders/${id}`)).order;
+    } catch (e) {
+      if (e.status === 404 || e.status === 403) return null;
+      throw e;
     }
   },
 
-  remove(key) {
-    localStorage.removeItem(PREFIX + key);
+  async addOrder({ country, items, shippingAddress, npwp, estimatedCost }) {
+    return (await request('/orders', {
+      method: 'POST',
+      body: { country, items, shippingAddress, npwp, estimatedCost },
+    })).order;
   },
 
-  // Users
-  getUsers() {
-    return this.get('users') || [];
+  async setOrderQuote(id, { estimatedCost, note }) {
+    return (await request(`/orders/${id}/quote`, { method: 'PUT', body: { estimatedCost, note } })).order;
   },
 
-  setUsers(users) {
-    this.set('users', users);
+  async updateOrderStatus(id, { status, note, warehouseLocation }) {
+    return (await request(`/orders/${id}/status`, {
+      method: 'PUT',
+      body: { status, note, warehouseLocation },
+    })).order;
   },
 
-  getUserById(id) {
-    return this.getUsers().find(u => u.id === id);
+  async payOrder(id, { stage, method }) {
+    return (await request(`/orders/${id}/pay`, { method: 'POST', body: { stage, method } })).order;
   },
 
-  getUserByEmail(email) {
-    return this.getUsers().find(u => u.email === email);
+  async consolidateOrders(orderIds) {
+    return (await request('/orders/consolidate', { method: 'POST', body: { orderIds } })).orders;
   },
 
-  addUser(user) {
-    const users = this.getUsers();
-    users.push(user);
-    this.setUsers(users);
-    return user;
+  async addOrderNote(id, message) {
+    return (await request(`/orders/${id}/notes`, { method: 'POST', body: { message } })).notes;
   },
 
-  updateUser(id, updates) {
-    const users = this.getUsers();
-    const idx = users.findIndex(u => u.id === id);
-    if (idx !== -1) {
-      users[idx] = { ...users[idx], ...updates };
-      this.setUsers(users);
-      return users[idx];
-    }
-    return null;
+  async deleteOrder(id) {
+    await request(`/orders/${id}`, { method: 'DELETE' });
   },
 
-  // Orders
-  getOrders() {
-    return this.get('orders') || [];
+  // ---------- Settings ----------
+  async getSettings() {
+    return (await request('/settings')).settings;
   },
 
-  setOrders(orders) {
-    this.set('orders', orders);
+  async updateSettings(updates) {
+    return (await request('/settings', { method: 'PUT', body: updates })).settings;
   },
 
-  getOrderById(id) {
-    return this.getOrders().find(o => o.id === id);
+  // ---------- Notifications ----------
+  async getNotifications() {
+    return (await request('/notifications')).notifications;
   },
 
-  getOrdersByUserId(userId) {
-    return this.getOrders().filter(o => o.userId === userId);
-  },
-
-  addOrder(order) {
-    const orders = this.getOrders();
-    orders.unshift(order);
-    this.setOrders(orders);
-    return order;
-  },
-
-  updateOrder(id, updates) {
-    const orders = this.getOrders();
-    const idx = orders.findIndex(o => o.id === id);
-    if (idx !== -1) {
-      orders[idx] = { ...orders[idx], ...updates, updatedAt: new Date().toISOString() };
-      this.setOrders(orders);
-      return orders[idx];
-    }
-    return null;
-  },
-
-  deleteOrder(id) {
-    const orders = this.getOrders().filter(o => o.id !== id);
-    this.setOrders(orders);
-  },
-
-  // Session
-  getSession() {
-    return this.get('session');
-  },
-
-  setSession(session) {
-    this.set('session', session);
-  },
-
-  clearSession() {
-    this.remove('session');
-  },
-
-  // Settings (admin)
-  getSettings() {
-    return this.get('settings') || {};
-  },
-
-  setSettings(settings) {
-    this.set('settings', settings);
-  },
-
-  updateSettings(updates) {
-    const settings = this.getSettings();
-    this.set('settings', { ...settings, ...updates });
-  },
-
-  // Notifications
-  getNotifications(userId) {
-    const all = this.get('notifications') || [];
-    return all.filter(n => n.userId === userId);
-  },
-
-  addNotification(notification) {
-    const all = this.get('notifications') || [];
-    all.unshift(notification);
-    this.set('notifications', all);
-  },
-
-  markNotificationRead(id) {
-    const all = this.get('notifications') || [];
-    const idx = all.findIndex(n => n.id === id);
-    if (idx !== -1) {
-      all[idx].read = true;
-      this.set('notifications', all);
-    }
-  },
-
-  // Check if seeded
-  isSeeded() {
-    return this.get('seeded') === true;
-  },
-
-  markSeeded() {
-    this.set('seeded', true);
-  },
-
-  // Clear all data
-  clearAll() {
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(PREFIX))
-      .forEach(k => localStorage.removeItem(k));
+  async markNotificationRead(id) {
+    return (await request(`/notifications/${id}/read`, { method: 'PATCH' })).notification;
   },
 };
 
